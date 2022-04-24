@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"strconv"
+	"bufio"
+	"os"
 )
 
 func display(sudoku Sudoku){
@@ -53,6 +55,82 @@ func loadSudoku(gameState string) Sudoku {
 	}
 	return sudoku
 }
+
+
+func remove(slice []int, value int) []int {
+
+	for i := 0; i < len(slice); i++ {
+		if value == slice[i] {
+			slice[i] = slice[len(slice)-1]
+			return slice[:len(slice)-1]
+		}
+	}
+	return slice
+}
+
+func collapseRow(sudoku Sudoku, i int , j int ) Sudoku {
+
+
+	cell := sudoku.cells[i][j]
+	if cell.value > 0 {
+		return sudoku
+	}
+	//checking rows
+	for j2 := 0; j2 < 9; j2++ {
+		if j != j2{
+		cell.possibilities = remove(cell.possibilities, sudoku.cells[i][j2].value)
+		}
+	}
+	//checking cols
+	for i2 := 0; i2 < 9; i2++ {
+		if i != i2 {
+		cell.possibilities = remove(cell.possibilities, sudoku.cells[i2][j].value)
+		}
+	}
+
+	box_i := i / 3
+	box_j := j / 3
+
+	for i3:= box_i * 3; i3 < (box_i + 1) * 3; i3++ {
+		for j3 := box_j * 3; j3 < (box_j +1) * 3; j3++ {
+			if i3 == i && j3 == j {
+				continue
+			}
+		cell.possibilities = remove(cell.possibilities, sudoku.cells[i3][j3].value)
+		}
+	}
+
+	if len(cell.possibilities) == 1 {
+
+		cell.value = cell.possibilities[0]
+
+	}
+	sudoku.cells[i][j] = cell
+    fmt.Printf("Number of possibilities for %d, %d: %d\n", i,j , len(cell.possibilities))
+	return sudoku
+}
+
+func collapseWaveFunc(sudoku Sudoku) (Sudoku,bool) {
+	all_collapsed := true
+	for i := 0; i < 9; i++ {
+		for j := 0; j < 9; j++ {
+			if sudoku.cells[i][j].value > 0 {
+				continue
+			} else {
+				all_collapsed = false
+				sudoku = collapseRow(sudoku,i,j)
+			}
+		}
+	}
+	return sudoku,all_collapsed
+}
+
+func waitForUser()  {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Press enter to collapse next step: ")
+	reader.ReadString('\n')
+}
+
 func main(){
 	var sudoku =loadSudoku(`0 4 0 0 0 0 1 7 9
 0 0 2 0 0 8 0 5 4
@@ -64,6 +142,16 @@ func main(){
 5 7 0 1 0 0 2 0 0
 9 2 8 0 0 0 0 6 0
 `)
-	display(sudoku)
+	for true {
+		display(sudoku)
+		waitForUser()
+		sudoku, solved := collapseWaveFunc(sudoku)
+		if solved{
+			fmt.Println("Sudoku solved.")
+			display(sudoku)
+			break
+		}
+	}
+
 
 }
