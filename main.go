@@ -68,9 +68,7 @@ func remove(slice []int, value int) []int {
 	return slice
 }
 
-func collapseRow(sudoku Sudoku, i int , j int ) Sudoku {
-
-
+func waveCollapse(sudoku Sudoku, i int , j int ) Sudoku {
 	cell := sudoku.cells[i][j]
 	if cell.value > 0 {
 		return sudoku
@@ -118,7 +116,7 @@ func collapseWaveFunc(sudoku Sudoku) (Sudoku,bool) {
 				continue
 			} else {
 				all_collapsed = false
-				sudoku = collapseRow(sudoku,i,j)
+				sudoku = waveCollapse(sudoku,i,j)
 			}
 		}
 	}
@@ -132,26 +130,26 @@ func waitForUser()  {
 }
 
 func main(){
-	var sudoku =loadSudoku(`0 4 0 0 0 0 1 7 9
-0 0 2 0 0 8 0 5 4
-0 0 6 0 0 5 0 0 8
-0 8 0 0 7 0 9 1 0
-0 5 0 0 9 0 0 3 0
-0 1 9 0 6 0 0 4 0
-3 0 0 4 0 0 7 0 0
-5 7 0 1 0 0 2 0 0
-9 2 8 0 0 0 0 6 0
+	var sudoku =loadSudoku(`0 0 0 0 0 0 0 0 7
+7 2 0 3 0 9 0 0 1
+0 0 8 7 0 5 0 6 0
+5 0 2 8 9 0 0 0 0
+0 4 0 5 0 1 0 9 0
+0 0 0 0 6 3 7 0 5
+0 3 0 9 0 6 1 0 0
+2 0 0 1 0 7 0 5 3
+9 0 0 0 0 0 0 0 0
 `)
+	noOfSteps := 0
 	for true {
 		display(sudoku)
-		waitForUser()
+		//waitForUser()
 		sudoku, solved := collapseWaveFunc(sudoku)
+		noOfSteps++
 		if solved{
-			fmt.Println("Sudoku solved.")
+			fmt.Println("Sudoku solved. No. of Steps: " , noOfSteps)
 			display(sudoku)
 			break
 		}
 	}
-
-
 }
